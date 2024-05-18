@@ -102,4 +102,98 @@ class SubwaySystem {
         return transferStations;
     }
 
+  public Map<Station, Double> getNearbyStations(String stationName, double maxDistance) {
+        Station start = stations.get(stationName);
+        if (start == null) {
+            throw new IllegalArgumentException("站点不存在: " + stationName);
+        }
+
+        Map<Station, Double> nearbyStations = new HashMap<>();
+        for (LineSegment segment : lineSegments) {
+            if (segment.from.equals(start) && segment.distance <= maxDistance) {
+                nearbyStations.put(segment.to, segment.distance);
+            }
+        }
+        return nearbyStations;
+    }
+
+    public List<List<Station>> getAllPaths(String startName, String endName) {
+        Station start = stations.get(startName);
+        Station end = stations.get(endName);
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("站点不存在: " + startName + " 或 " + endName);
+        }
+        List<List<Station>> paths = new ArrayList<>();
+        findAllPaths(start, end, new HashSet<>(), new ArrayList<>(), paths);
+        return paths;
+    }
+
+    private void findAllPaths(Station current, Station end, Set<Station> visited, List<Station> path, List<List<Station>> paths) {
+        visited.add(current);
+        path.add(current);
+
+        if (current.equals(end)) {
+            paths.add(new ArrayList<>(path));
+        } else {
+            for (LineSegment segment : lineSegments) {
+                if (segment.from.equals(current) && !visited.contains(segment.to)) {
+                    findAllPaths(segment.to, end, visited, path, paths);
+                }
+            }
+        }
+
+        path.remove(path.size() - 1);
+        visited.remove(current);
+    }
+
+    public List<Station> getShortestPath(String startName, String endName) {
+        Station start = stations.get(startName);
+        Station end = stations.get(endName);
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("站点不存在: " + startName + " 或 " + endName);
+        }
+
+        Map<Station, Double> distances = new HashMap<>();
+        Map<Station, Station> previousStations = new HashMap<>();
+        PriorityQueue<Station> queue = new PriorityQueue<>(Comparator.comparingDouble(distances::get));
+
+        for (Station station : stations.values()) {
+            if (station.equals(start)) {
+                distances.put(station, 0.0);
+            } else {
+                distances.put(station, Double.MAX_VALUE);
+            }
+            queue.add(station);
+        }
+
+        while (!queue.isEmpty()) {
+            Station current = queue.poll();
+
+            for (LineSegment segment : lineSegments) {
+                if (segment.from.equals(current)) {
+                    Station neighbor = segment.to;
+                    double newDist = distances.get(current) + segment.distance;
+                    if (newDist < distances.get(neighbor)) {
+                        queue.remove(neighbor);
+                        distances.put(neighbor, newDist);
+                        previousStations.put(neighbor, current);
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        List<Station> path = new ArrayList<>();
+        for (Station at = end; at != null; at = previousStations.get(at)) {
+            path.add(at);
+        }
+        Collections.reverse(path);
+        return path;
+    }
+
+    public void printPath(List<Station> path) {
+        for (int i = 0; i < path.size() - 1; i++) {
+            System.out.println(path.get(i).name + " -> " + path.get(i + 1).name);
+        }
+    }
    
