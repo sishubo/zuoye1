@@ -50,7 +50,7 @@ class Station {
     }
 }
 
-class LineSegment {
+class LineSegment {// LineSegment类表示地铁线路上的一段
     String line;
     Station from;
     Station to;
@@ -69,7 +69,7 @@ class LineSegment {
     }
 }
 
-class SubwaySystem {
+class SubwaySystem {// SubwaySystem类表示整个地铁系统
     Map<String, Station> stations;
     List<LineSegment> lineSegments;
 
@@ -109,7 +109,7 @@ class SubwaySystem {
         lineSegments.add(new LineSegment(line, toStation, fromStation, distance));
     }
 
-    public Set<Station> getTransferStations() {
+    public Set<Station> getTransferStations() {// 获取所有中转站的方法
         Set<Station> transferStations = new HashSet<>();
         for (Station station : stations.values()) {
             if (station.lines.size() > 1) {
@@ -119,7 +119,7 @@ class SubwaySystem {
         return transferStations;
     }
 
-  public Map<Station, Double> getNearbyStations(String stationName, double maxDistance) {
+  public Map<Station, Double> getNearbyStations(String stationName, double maxDistance) {// 根据站点名称和最大距离获取附近站点的方法
         Station start = stations.get(stationName);
         if (start == null) {
             throw new IllegalArgumentException("站点不存在: " + stationName);
